@@ -5,6 +5,7 @@
         "build": "node ophidian.config.mjs production"
     },
     "license": "ISC",
+    "packageManager": "pnpm@7.33.6",
     "devDependencies": {
         "@ophidian/build": "^1.2",
         "@ophidian/core": "ophidian-lib/core",
