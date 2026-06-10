@@ -20,6 +20,7 @@ declare module "obsidian" {
         onMouseOver?(): void;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-namespace
     export namespace Keymap {
         export function getModifiers(event: Event): string
     }
@@ -59,17 +60,21 @@ export class PopupMenu extends (Menu as new (app: App) => Menu) { // XXX fixme w
         this.scope = new Scope;
         this.scope.register([], "ArrowUp",   this.onArrowUp.bind(this));
         this.scope.register(["Mod"], "k",    this.onArrowUp.bind(this));
+        this.scope.register(["Mod"], "p",    this.onArrowUp.bind(this));
         this.scope.register([], "ArrowDown", this.onArrowDown.bind(this));
         this.scope.register(["Mod"], "j",    this.onArrowDown.bind(this));
+        this.scope.register(["Mod"], "n",    this.onArrowDown.bind(this));
         this.scope.register([], "Enter",     this.onEnter.bind(this));
         this.scope.register([], "Escape",    this.onEscape.bind(this));
         this.scope.register([], "ArrowLeft", this.onArrowLeft.bind(this));
         this.scope.register(["Mod"], "h",    this.onArrowLeft.bind(this));
+        this.scope.register(["Mod"], "b",    this.onArrowLeft.bind(this));
 
         this.scope.register([], "Home", this.onHome.bind(this));
         this.scope.register([], "End",  this.onEnd.bind(this));
         this.scope.register([], "ArrowRight", this.onArrowRight.bind(this));
         this.scope.register(["Mod"], "l",     this.onArrowRight.bind(this));
+        this.scope.register(["Mod"], "f",     this.onArrowRight.bind(this));
 
         // Make obsidian.Menu think mousedowns on our child menu(s) are happening
         // on us, so we won't close before an actual click occurs
@@ -105,7 +110,7 @@ export class PopupMenu extends (Menu as new (app: App) => Menu) { // XXX fixme w
         }));
     }
 
-    onItemHover(item: SearchableMenuItem, event?: MouseEvent, target?: HTMLDivElement) {
+    onItemHover(item: SearchableMenuItem, _event?: MouseEvent, _target?: HTMLDivElement) {
         this.select(this.items.indexOf(item), false);
     }
 

@@ -42,7 +42,7 @@ export default class QE extends Plugin {
 
         addCommands(this);
 
-        this.registerEvent(this.app.workspace.on("file-menu", (menu, file, source) => {
+        this.registerEvent(this.app.workspace.on("file-menu", (menu, file) => {
             let item: MenuItem
             if (!(menu instanceof ContextMenu)) menu.addItem(i => {
                 i.setIcon("folder").setTitle("Show in Quick Explorer").onClick(e => { this.explorers.forDom(item.dom)?.browseFile(file); });

@@ -1,4 +1,6 @@
-import { RedomComponent, RedomElement, RedomElementOfElQuery } from "redom";
+// eslint-disable @typescript-eslint/no-namespace
+import { RedomComponent } from "redom";
+
 declare global {
     namespace JSX {
         export interface IntrinsicElements {

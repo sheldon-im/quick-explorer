@@ -1,4 +1,5 @@
 import { TAbstractFile, TFile, TFolder } from "./obsidian.ts";
+import { app } from "@ophidian/core";
 
 export const previewIcons: Record<string, string> = {
     markdown: "document",

@@ -177,7 +177,7 @@ export class FolderMenu extends PopupMenu implements HoverParent {
     }
 
     fileForDom(targetEl: HTMLDivElement) {
-        const { filePath } = targetEl?.dataset;
+        const filePath = targetEl?.dataset?.filePath;
         if (filePath) return this.app.vault.getAbstractFileByPath(filePath);
     }
 
