@@ -1,4 +1,4 @@
-// eslint-disable @typescript-eslint/no-namespace
+/* eslint-disable @typescript-eslint/no-namespace */
 import { RedomComponent } from "redom";
 
 declare global {

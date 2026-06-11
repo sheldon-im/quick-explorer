@@ -78,6 +78,7 @@ export class PopupMenu extends (Menu as new (app: App) => Menu) { // XXX fixme w
 
         // Make obsidian.Menu think mousedowns on our child menu(s) are happening
         // on us, so we won't close before an actual click occurs
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const menu = this;
         around(this.dom, {contains(prev){ return function(target: Node) {
             const ret = prev.call(this, target) || menu.child?.dom.contains(target);

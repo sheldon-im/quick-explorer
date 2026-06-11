@@ -82,6 +82,7 @@ export class FolderMenu extends PopupMenu implements HoverParent {
 
         // Make obsidian.Menu think mousedowns on our popups are happening
         // on us, so we won't close before an actual click occurs
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const menu = this;
         around(this.dom, {contains(prev){ return function(target: Node) {
             const ret = prev.call(this, target) || menu._popover?.hoverEl.contains(target);
@@ -237,10 +238,12 @@ export class FolderMenu extends PopupMenu implements HoverParent {
         }
         if (folders.length) {
             if (folderNote) this.addSeparator();
+            // eslint-disable-next-line @typescript-eslint/unbound-method
             folders.map(this.addFile, this);
         }
         if (files.length) {
             if (folders.length || folderNote) this.addSeparator();
+            // eslint-disable-next-line @typescript-eslint/unbound-method
             files.map(this.addFile, this);
         }
         this.select(selectedFile ? this.itemForPath(selectedFile.path) : 0);
