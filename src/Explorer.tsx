@@ -221,11 +221,10 @@ export class Breadcrumb {
         if (i>0) return this.peers[i-1];
     }
     open(e?: MouseEvent) {
-        const selected = this.file;
-        if (selected) {
+        if (this.file) {
             this.onOpen?.(this)
-            const folder = this.file.parent || selected as TFolder;
-            return new FolderMenu(app, folder, selected, this).cascade(
+            const folder = this.file.parent || app.vault.getRoot();
+            return new FolderMenu(app, folder, this.file, this).cascade(
                 this.el, e && e.isTrusted && e, () => this.onClose(this)
             );
         }

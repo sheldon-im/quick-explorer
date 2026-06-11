@@ -23,7 +23,7 @@ export function fileIcon(file: TAbstractFile) {
 }
 
 export function folderNoteFor(folder: TFolder) {
-    return app.vault.getAbstractFileByPath(folderNotePath(folder));
+    return app.vault.getFileByPath(folderNotePath(folder));
 }
 
 export function folderNotePath(folder: TFolder) {
@@ -34,7 +34,7 @@ export function folderNotePath(folder: TFolder) {
 const alphaSort = new Intl.Collator(undefined, {usage: "sort", sensitivity: "base", numeric: true}).compare;
 
 export function sortedFiles(folder: TFolder, allFiles: boolean = app.vault.getConfig("showUnsupportedFiles")) {
-    const {children} = folder;
+    const children = folder.children as Array<TFile|TFolder>;
     const folderNote = folderNoteFor(folder);
     const items = children.slice().sort((a: TAbstractFile, b: TAbstractFile) => alphaSort(a.name, b.name))
     const folders = items.filter(f => f instanceof TFolder) as TFolder[];
@@ -46,7 +46,7 @@ export function sortedFiles(folder: TFolder, allFiles: boolean = app.vault.getCo
 
 function fileIndex(folder: TFolder, allFiles?: boolean): TAbstractFile[] {
     const {folderNote, folders, files} = sortedFiles(folder, false);
-    return (folderNote ? [folderNote] : []).concat(folders, files);
+    return ((folderNote ? [folderNote] : []) as TAbstractFile[]).concat(folders, files);
 }
 
 export function navigateFile(file: TAbstractFile, direction: number, relative: boolean): TFile {

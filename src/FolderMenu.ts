@@ -28,6 +28,8 @@ declare module "obsidian" {
     interface Vault {
         getConfig(option: string): unknown
         getConfig(option:"showUnsupportedFiles"): boolean
+        getFileByPath(path: string): TFile | null
+        getFolderByPath(path: string): TFolder | null
     }
     interface Workspace {
         iterateLeaves(callback: (item: WorkspaceLeaf) => unknown, item: WorkspaceParent): boolean;
@@ -179,7 +181,7 @@ export class FolderMenu extends PopupMenu implements HoverParent {
 
     fileForDom(targetEl: HTMLDivElement) {
         const filePath = targetEl?.dataset?.filePath;
-        if (filePath) return this.app.vault.getAbstractFileByPath(filePath);
+        if (filePath) return this.app.vault.getAbstractFileByPath(filePath) as TFile | TFolder;
     }
 
     itemForPath(filePath: string) {
@@ -253,7 +255,7 @@ export class FolderMenu extends PopupMenu implements HoverParent {
         file instanceof TFolder ? file.children.map(this.fileCount).reduce((a,b) => a+b, 0) : (fileIcon(file) ? 1 : 0)
     )
 
-    addFile(file: TAbstractFile) {
+    addFile(file: TFile|TFolder) {
         const icon = fileIcon(file);
         this.addItem(i => {
             i.setTitle(file.name);
@@ -469,7 +471,7 @@ export class FolderMenu extends PopupMenu implements HoverParent {
         }
     }
 
-    onClickFile(file: TAbstractFile, target: HTMLDivElement, event?: MouseEvent|KeyboardEvent) {
+    onClickFile(file: TFile|TFolder, target: HTMLDivElement, event?: MouseEvent|KeyboardEvent) {
         this.hidePopover();
         const idx = this.itemForPath(file.path);
         if (idx >= 0 && this.selected != idx) this.select(idx);
@@ -490,7 +492,7 @@ export class FolderMenu extends PopupMenu implements HoverParent {
             this.openBreadcrumb(this.crumb?.next());
         } else {
             // Otherwise, pop a new menu for the subfolder
-            const folderMenu = new FolderMenu(this, file as TFolder, folderNoteFor(file as TFolder));
+            const folderMenu = new FolderMenu(this, file, folderNoteFor(file));
             folderMenu.cascade(target, event instanceof MouseEvent ? event : undefined);
         }
     }
