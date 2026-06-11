@@ -98,6 +98,6 @@ export default class QE extends Plugin {
                 }
             }
         })
-        try { await openDialog(); } finally { opened || remove(); }
+        try { await openDialog(); } finally { void (opened || remove()); }
     }
 }

@@ -76,7 +76,7 @@ export class FolderMenu extends PopupMenu implements HoverParent {
         });
 
         // When we unload, reactivate parent menu's hover, if needed
-        this.register(() => { autoPreview && this.parent instanceof FolderMenu && this.parent.showPopover(); })
+        this.register(() => { if (autoPreview && this.parent instanceof FolderMenu) this.parent.showPopover(); })
 
 
 
@@ -273,7 +273,8 @@ export class FolderMenu extends PopupMenu implements HoverParent {
     }
 
     togglePreviewMode() {
-        if (autoPreview = !autoPreview) this.showPopover(); else this.hidePopover();
+        autoPreview = !autoPreview
+        if (autoPreview) this.showPopover(); else this.hidePopover();
         return false;
     }
 
@@ -362,7 +363,7 @@ export class FolderMenu extends PopupMenu implements HoverParent {
         this.hidePopover();
         if (!autoPreview) return;
         const preview = this.app.internalPlugins.plugins["page-preview"]
-        preview?.enabled && this.maybeHover(this.currentItem()?.dom, file => (
+        if (preview?.enabled) this.maybeHover(this.currentItem()?.dom, file => (
             preview.enabled && preview?.instance?.onLinkHover(
                 this, windowForDom(this.dom).document.body, file.path, ""
             )
@@ -419,7 +420,7 @@ export class FolderMenu extends PopupMenu implements HoverParent {
             popover.togglePin?.(false);
 
             // Ditch event handlers (Workaround for https://github.com/nothingislost/obsidian-hover-editor/issues/125)
-            Promise.resolve().then(() => popover.abortController?.unload?.());
+            void Promise.resolve().then(() => popover.abortController?.unload?.());
 
             // Position the popover so it doesn't overlap the menu horizontally (as long as it fits)
             // and so that its vertical position overlaps the selected menu item (placing the top a
