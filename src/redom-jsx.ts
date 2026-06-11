@@ -3,8 +3,10 @@ import { RedomComponent } from "redom";
 
 declare global {
     namespace JSX {
-        export interface IntrinsicElements {
-            [elemName: string]: any;
+        export type IntrinsicElements = {
+            [K in keyof HTMLElementTagNameMap]: Partial<HTMLElementTagNameMap[K] & {
+                class: string
+            }>
         }
         export type ElementClass = RedomComponent
         export type Element = HTMLElement

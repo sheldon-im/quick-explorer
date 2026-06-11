@@ -26,11 +26,11 @@ declare module "obsidian" {
         }
     }
     interface Vault {
-        getConfig(option: string): any
+        getConfig(option: string): unknown
         getConfig(option:"showUnsupportedFiles"): boolean
     }
     interface Workspace {
-        iterateLeaves(callback: (item: WorkspaceLeaf) => any, item: WorkspaceParent): boolean;
+        iterateLeaves(callback: (item: WorkspaceLeaf) => unknown, item: WorkspaceParent): boolean;
     }
 }
 
@@ -404,7 +404,7 @@ export class FolderMenu extends PopupMenu implements HoverParent {
         this._popover = popover;
 
         /* Work around 0.15.x null targetEl bug using document.body */
-        const targetEl: HTMLElement = (popover as any)?.targetEl;
+        const targetEl = popover?.targetEl;
         if (targetEl && targetEl === targetEl.ownerDocument.body) {
             targetEl.removeEventListener("mouseover", popover.onMouseIn);
             targetEl.removeEventListener("mouseout", popover.onMouseOut);
@@ -443,7 +443,7 @@ export class FolderMenu extends PopupMenu implements HoverParent {
                 popover.togglePin?.(true);
             }
             if ("onShowCallback" in popover) {
-                around(popover as any, {onShowCallback(old) {
+                around(popover as unknown, {onShowCallback(old: (this: HoverPopover) => unknown) {
                     return () => {
                         popover.hoverEl.win.requestAnimationFrame(reposition);
                         return old?.call(popover);

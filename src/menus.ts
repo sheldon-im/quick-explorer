@@ -120,7 +120,7 @@ export class PopupMenu extends (Menu as new (app: App) => Menu) { // XXX fixme w
     }
 
     // Override to avoid having a mouseover event handler
-    addItem(cb: (i: MenuItem) => any) {
+    addItem(cb: (i: MenuItem) => unknown) {
         const i = new SearchableMenuItem(this);
         this.items.push(i);
         cb(i);
@@ -230,7 +230,7 @@ export class PopupMenu extends (Menu as new (app: App) => Menu) { // XXX fixme w
         return this.parent instanceof App ? this : this.parent.rootMenu();
     }
 
-    cascade(target: HTMLElement, event?: MouseEvent, onClose?: () => any, hOverlap = 15, vOverlap = 5) {
+    cascade(target: HTMLElement, event?: MouseEvent, onClose?: () => unknown, hOverlap = 15, vOverlap = 5) {
         const {left, top, bottom, width} = target.getBoundingClientRect();
         const centerX = Math.max(0, left + (target.matchParent(".menu") ? Math.min(150, width/3) : 0));
         const win = window.activeWindow ?? window, {innerHeight, innerWidth} = win;
@@ -285,7 +285,7 @@ function escapeRegex(s: string) {
 
 function onElement<K extends keyof HTMLElementEventMap>(
     el: HTMLElement, type: K, selector:string,
-    listener: (this: HTMLElement, ev: HTMLElementEventMap[K], delegateTarget: HTMLElement) => any,
+    listener: (this: HTMLElement, ev: HTMLElementEventMap[K], delegateTarget: HTMLElement) => unknown,
     options: boolean | AddEventListenerOptions = false
 ) {
     el.on(type, selector, listener, options)

@@ -22,7 +22,7 @@ declare module "obsidian" {
                     enabled: boolean
                     instance: {
                         onLinkHover(
-                            parent: HoverParent, targetEl: Element, linkText: string, path: string, state?: any
+                            parent: HoverParent, targetEl: Element, linkText: string, path: string, state?: unknown
                         ): void
                     }
                 }
@@ -35,6 +35,9 @@ declare module "obsidian" {
         promptForFileRename(file: TAbstractFile): Promise<void>
         createNewMarkdownFile(parentFolder?: TFolder, pattern?: string): Promise<TFile>
         createNewFolder(parentFolder?: TFolder): Promise<TFolder>
+    }
+    interface Menu {
+        addSections(sections: string[]): void
     }
 }
 
@@ -52,7 +55,7 @@ export class ContextMenu extends PopupMenu {
         super(parent);
         const { workspace } = this.app;
         const haveFileExplorer = this.app.internalPlugins.plugins["file-explorer"].enabled;
-        (this as any).addSections(["title", "open", "action", "view", "info", "system", "", "danger"])
+        this.addSections(["title", "open", "action", "view", "info", "system", "", "danger"])
 
         if (file instanceof TFolder) {
             this.addItem(i => i.setTitle(optName("new-note")).setIcon("create-new").onClick(async e => {

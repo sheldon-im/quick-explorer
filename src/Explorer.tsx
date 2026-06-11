@@ -8,14 +8,18 @@ export const hoverSource = "quick-explorer:folder-menu";
 
 declare module "obsidian" {
     interface App {
-        dragManager: any
+        dragManager: {
+            onDragStart(event: DragEvent, dragData: unknown): void
+            dragFile(event: DragEvent, file: TFile): void
+            dragFolder(event: DragEvent, file: TFolder): void
+        }
         getAppTitle(prefix?: string): string;
     }
 }
 
 export function startDrag(app: App, path: string, event: DragEvent) {
     if (!path || path === "/") return;
-    const file = app.vault.getAbstractFileByPath(path);
+    const file = app.vault.getAbstractFileByPath(path) as TFile | TFolder;
     if (!file) return;
     const { dragManager } = app;
     const dragData = file instanceof TFile ? dragManager.dragFile(event, file) : dragManager.dragFolder(event, file);
@@ -26,7 +30,7 @@ class Explorable {
     nameEl = <span class="explorable-name"/>;
     sepEl = <span class="explorable-separator"/>;
     el = <span draggable class="explorable titlebar-button">{this.nameEl}{this.sepEl}</span>;
-    update(data: {file: TAbstractFile, path: string}, index: number, items: any[]) {
+    update(data: {file: TAbstractFile, path: string}, index: number, items: unknown[]) {
         const {file, path} = data;
         let name = file.name || path;
         this.sepEl.toggle(index < items.length-1);
@@ -200,8 +204,8 @@ export class Breadcrumb {
         public peers: Breadcrumb[],
         public el: HTMLElement,
         public file: TAbstractFile,
-        public onOpen?: (crumb: Breadcrumb) => any,
-        public onClose?: (crumb: Breadcrumb) => any,
+        public onOpen?: (crumb: Breadcrumb) => unknown,
+        public onClose?: (crumb: Breadcrumb) => unknown,
     ) {
         peers.push(this);
     }
