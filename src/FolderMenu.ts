@@ -51,10 +51,13 @@ export class FolderMenu extends PopupMenu implements HoverParent {
 
     constructor(public parent: MenuParent, public folder: TFolder, public selectedFile?: TAbstractFile, public crumb?: Breadcrumb) {
         super(parent);
+        this.dom.setAttr("role", "listbox");
+        this.dom.setAttr("aria-label", folder.path || "/");
         this.loadFiles(folder, selectedFile);
         this.scope.register([],        "Tab",   this.togglePreviewMode.bind(this));
         this.scope.register(["Mod"],   "Enter", this.onEnter.bind(this));
         this.scope.register(["Alt"],   "Enter", this.onKeyboardContextMenu.bind(this));
+        this.scope.register(["Shift"], "F10",   this.onKeyboardContextMenu.bind(this));
         this.scope.register(null,      "Enter", this.onEnter.bind(this));
         this.scope.register([],        "\\",    this.onKeyboardContextMenu.bind(this));
         this.scope.register([],  "ContextMenu", this.onKeyboardContextMenu.bind(this));
@@ -92,13 +95,37 @@ export class FolderMenu extends PopupMenu implements HoverParent {
         }}});
     }
 
+    cascade(target: HTMLElement, event?: MouseEvent, onClose?: () => unknown, hOverlap = 15, vOverlap = 5) {
+        const openerIsBreadcrumb = this.rootMenu() === this && target.matches(".explorable[role=button]");
+        if (!openerIsBreadcrumb) return super.cascade(target, event, onClose, hOverlap, vOverlap);
+
+        target.setAttr("aria-controls", this.dom.id);
+        target.setAttr("aria-expanded", "true");
+        return super.cascade(target, event, () => {
+            target.setAttr("aria-expanded", "false");
+            target.removeAttribute("aria-controls");
+            onClose?.();
+        }, hOverlap, vOverlap);
+    }
+
     onArrowLeft() {
-        super.onArrowLeft();
-        if (this.rootMenu() === this) this.openBreadcrumb(this.crumb?.prev());
+        if (this.rootMenu() !== this) return super.onArrowLeft();
+        const previous = this.crumb?.prev();
+        if (previous) return this.openBreadcrumb(previous);
         return false;
     }
 
+    onEnter(event: KeyboardEvent) {
+        const file = this.currentFile();
+        if (file instanceof TFolder) {
+            this.onClickFile(file, this.currentItem().dom, event);
+            return false;
+        }
+        return super.onEnter(event);
+    }
+
     onKeyboardContextMenu(e: KeyboardEvent) {
+        e.preventDefault();
         if (e.code === "ContextMenu") {
             // Browser will fire contextmenu event on keyup unless prevented:
             e.view.addEventListener("keyup", upHandler, {capture: true});
@@ -110,8 +137,9 @@ export class FolderMenu extends PopupMenu implements HoverParent {
                 }
             }
         }
-        const target = this.items[this.selected]?.dom, file = target && this.fileForDom(target);
-        if (file) new ContextMenu(this, file).cascade(target);
+        const target = this.items[this.selected]?.dom ?? this.dom;
+        const file = this.fileForDom(target) ?? this.folder;
+        new ContextMenu(this, file).cascade(target);
         return false;
     }
 
@@ -262,6 +290,7 @@ export class FolderMenu extends PopupMenu implements HoverParent {
             i.dom.dataset.filePath = file.path;
             i.dom.setAttr("draggable", "true");
             i.dom.addClass (file instanceof TFolder ? "is-qe-folder" : "is-qe-file");
+            i.dom.setAttr("aria-selected", "false");
             if (icon) i.setIcon(icon);
             if (file instanceof TFile) {
                 i.setTitle(file.basename);
@@ -272,6 +301,10 @@ export class FolderMenu extends PopupMenu implements HoverParent {
             }
             i.onClick(e => this.onClickFile(file, i.dom, e))
         });
+    }
+
+    itemRole() {
+        return "option";
     }
 
     togglePreviewMode() {
@@ -347,6 +380,7 @@ export class FolderMenu extends PopupMenu implements HoverParent {
     select(idx: number, scroll = true) {
         const old = this.selected;
         super.select(idx, scroll);
+        this.items.forEach((item, index) => item.dom.setAttr("aria-selected", index === this.selected ? "true" : "false"));
         if (old !== this.selected) {
             // selected item changed; trigger new popover or hide the old one
             if (autoPreview) this.showPopover(); else this.hidePopover();

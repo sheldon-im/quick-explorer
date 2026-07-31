@@ -53,6 +53,7 @@ function optName(name: string) {
 export class ContextMenu extends PopupMenu {
     constructor(parent: MenuParent, file: TAbstractFile) {
         super(parent);
+        this.dom.setAttr("aria-label", file.name);
         const { workspace } = this.app;
         const haveFileExplorer = this.app.internalPlugins.plugins["file-explorer"].enabled;
         this.addSections(["title", "open", "action", "view", "info", "system", "", "danger"])

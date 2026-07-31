@@ -30,6 +30,12 @@ class Explorable {
     nameEl = <span class="explorable-name"/>;
     sepEl = <span class="explorable-separator"/>;
     el = <span draggable class="explorable titlebar-button">{this.nameEl}{this.sepEl}</span>;
+    constructor() {
+        this.el.setAttr("role", "button");
+        this.el.setAttr("tabindex", "0");
+        this.el.setAttr("aria-haspopup", "listbox");
+        this.el.setAttr("aria-expanded", "false");
+    }
     update(data: {file: TAbstractFile, path: string}, index: number, items: unknown[]) {
         const {file, path} = data;
         let name = file.name || path;
@@ -116,6 +122,19 @@ export class Explorer extends PerWindowComponent {
         });
         this.el.on("click", ".explorable", (event, target) => {
             this.folderMenu(target, event.isTrusted && event);
+        });
+        this.el.on("keydown", ".explorable", (event: KeyboardEvent, target: HTMLElement) => {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                this.folderMenu(target);
+                return false;
+            }
+            if (event.key === "ContextMenu" || (event.shiftKey && event.key === "F10")) {
+                event.preventDefault();
+                const file = this.app.vault.getAbstractFileByPath(target.dataset.filePath);
+                if (file) new ContextMenu(this.app, file).cascade(target);
+                return false;
+            }
         });
         this.el.on('dragstart', ".explorable", (event, target) => {
             startDrag(this.app, target.dataset.filePath, event);
