@@ -44,7 +44,6 @@ interface HoverEditor extends HoverPopover {
 
 // Global auto preview mode
 let autoPreview = true
-let folderMenuItemId = 0
 
 export class FolderMenu extends PopupMenu implements HoverParent {
 
@@ -53,7 +52,6 @@ export class FolderMenu extends PopupMenu implements HoverParent {
     constructor(public parent: MenuParent, public folder: TFolder, public selectedFile?: TAbstractFile, public crumb?: Breadcrumb) {
         super(parent);
         this.dom.setAttr("role", "listbox");
-        this.dom.setAttr("tabindex", "-1");
         this.dom.setAttr("aria-label", folder.path || "/");
         this.loadFiles(folder, selectedFile);
         this.scope.register([],        "Tab",   this.togglePreviewMode.bind(this));
@@ -97,9 +95,7 @@ export class FolderMenu extends PopupMenu implements HoverParent {
     }
 
     onArrowLeft() {
-        const parent = this.parent instanceof FolderMenu ? this.parent : null;
         super.onArrowLeft();
-        if (parent?.visible) parent.focusList();
         if (this.rootMenu() === this) this.openBreadcrumb(this.crumb?.prev());
         return false;
     }
@@ -266,9 +262,6 @@ export class FolderMenu extends PopupMenu implements HoverParent {
         this.addItem(i => {
             i.setTitle(file.name);
             i.dom.dataset.filePath = file.path;
-            i.dom.id = `quick-explorer-folder-item-${folderMenuItemId++}`;
-            i.dom.setAttr("role", "option");
-            i.dom.setAttr("aria-selected", "false");
             i.dom.setAttr("draggable", "true");
             i.dom.addClass (file instanceof TFolder ? "is-qe-folder" : "is-qe-file");
             if (icon) i.setIcon(icon);
@@ -283,6 +276,10 @@ export class FolderMenu extends PopupMenu implements HoverParent {
         });
     }
 
+    itemRole() {
+        return "option";
+    }
+
     togglePreviewMode() {
         autoPreview = !autoPreview
         if (autoPreview) this.showPopover(); else this.hidePopover();
@@ -293,7 +290,6 @@ export class FolderMenu extends PopupMenu implements HoverParent {
 
     onload() {
         super.onload();
-        this.focusList();
         this.register(
             onElement(this.dom.ownerDocument.body, "pointerdown", ".hover-popover", (e, t) => {
                 if (this.hoverPopover?.hoverEl === t) {
@@ -336,7 +332,7 @@ export class FolderMenu extends PopupMenu implements HoverParent {
         if (this.selected > posn) this.selected -= 1;
         item.dom.detach()
         this.items.remove(item);
-        this.syncSelection();
+        this.syncActiveDescendant();
     }
 
     onEscape() {
@@ -358,26 +354,12 @@ export class FolderMenu extends PopupMenu implements HoverParent {
     select(idx: number, scroll = true) {
         const old = this.selected;
         super.select(idx, scroll);
-        this.syncSelection();
         if (old !== this.selected) {
             // selected item changed; trigger new popover or hide the old one
             if (autoPreview) this.showPopover(); else this.hidePopover();
         }
     }
 
-    syncSelection() {
-        const active = this.items[this.selected]?.dom;
-        this.items.forEach(item => item.dom.setAttr("aria-selected", item.dom === active ? "true" : "false"));
-        if (active?.id) this.dom.setAttr("aria-activedescendant", active.id);
-        else this.dom.removeAttribute("aria-activedescendant");
-    }
-
-    focusList() {
-        this.syncSelection();
-        this.dom.ownerDocument.defaultView?.requestAnimationFrame(() => {
-            if (this.visible) this.dom.focus({preventScroll: true});
-        });
-    }
 
     hidePopover() {
         this.hoverPopover = null;

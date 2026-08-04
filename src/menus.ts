@@ -43,6 +43,8 @@ export class SearchableMenuItem extends (MenuItem as unknown as new (menu: Menu)
 
 export type MenuParent = App | PopupMenu;
 
+let menuItemId = 0;
+
 export class PopupMenu extends (Menu as new (app: App) => Menu) { // XXX fixme when 0.15.6 is required
     /** The child menu popped up over this one */
     child: Menu
@@ -54,6 +56,8 @@ export class PopupMenu extends (Menu as new (app: App) => Menu) { // XXX fixme w
 
     constructor(public parent: MenuParent, public app: App = parent instanceof App ? parent : parent.app) {
         super(app);
+        this.dom.setAttr("role", "menu");
+        this.dom.setAttr("tabindex", "-1");
         this.setUseNativeMenu?.(false);
         if (parent instanceof PopupMenu) parent.setChildMenu(this);
 
@@ -98,6 +102,7 @@ export class PopupMenu extends (Menu as new (app: App) => Menu) { // XXX fixme w
         super.onload();
         this.visible = true;
         this.showSelected();
+        this.focusMenu();
         let lastX:number, lastY: number;
         // We wait until now to register so that any initial mouseover of the old mouse position will be skipped
         this.register(onElement(this.dom, "mouseover", ".menu-item", (event: MouseEvent, target: HTMLDivElement) => {
@@ -127,6 +132,10 @@ export class PopupMenu extends (Menu as new (app: App) => Menu) { // XXX fixme w
         cb(i);
         if (this._loaded && this.sort) this.sort();
         return this;
+    }
+
+    itemRole() {
+        return "menuitem";
     }
 
     onKeyDown(event: KeyboardEvent) {
@@ -175,7 +184,26 @@ export class PopupMenu extends (Menu as new (app: App) => Menu) { // XXX fixme w
     select(n: number, scroll = true) {
         this.match = "" // reset search on move
         super.select(n);
+        this.syncActiveDescendant();
         if (scroll) this.showSelected();
+    }
+
+    syncActiveDescendant() {
+        this.items.forEach(item => {
+            if (!item.dom.matches(".menu-item")) return;
+            if (!item.dom.id) item.dom.id = `quick-explorer-menu-item-${menuItemId++}`;
+            item.dom.setAttr("role", this.itemRole());
+        });
+        const active = this.items[this.selected]?.dom;
+        if (active?.matches(".menu-item") && active.id) this.dom.setAttr("aria-activedescendant", active.id);
+        else this.dom.removeAttribute("aria-activedescendant");
+    }
+
+    focusMenu() {
+        this.syncActiveDescendant();
+        this.dom.ownerDocument.defaultView?.requestAnimationFrame(() => {
+            if (this.visible) this.dom.focus({preventScroll: true});
+        });
     }
 
     showSelected() {
@@ -208,6 +236,7 @@ export class PopupMenu extends (Menu as new (app: App) => Menu) { // XXX fixme w
     onArrowLeft() {
         if (this.rootMenu() !== this) {
             this.hide();
+            if (this.parent instanceof PopupMenu && this.parent.visible) this.parent.focusMenu();
         }
         return false;
     }
